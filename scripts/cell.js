@@ -3,9 +3,9 @@
 
 class Cell{
     //생성부
-    constructor(position, size){
+    constructor(position, mass){
         this.position = position
-        this.size = size
+        this.mass = mass
 
         this.velocity = new Vector2(0, 0)
     }

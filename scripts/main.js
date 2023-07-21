@@ -32,7 +32,7 @@ $(document).ready(function () {
         drw.coordinateDrawing()
     
         //세포 그리기
-        drw.Circle(cell.size, cell.position)
+        drw.Circle(Math.sqrt(cell.mass), cell.position)
     }, (dt)*1000)
 });
 

@@ -40,7 +40,6 @@ class Drawing{
 
         ctx.lineWidth = 1;
 
-
         //x축 그리기
         ctx.beginPath()
         ctx.moveTo(this.cvtct(this.xmax, 0).x, this.cvtct(this.xmax, 0).y)
