@@ -6,6 +6,7 @@ class Cell{
     constructor(position, mass){
         this.position = position
         this.mass = mass
+        this.radius = Math.sqrt(mass)
 
         this.velocity = new Vector2(0, 0)
     }
@@ -21,11 +22,24 @@ class Cell{
         var velocity = new Vector2(mvx * constant, mvy * constant)
         
         //최고 속도 정하기
-        var maxV = 3
+        var maxV = 10
         if(velocity.norm() > maxV){
             velocity = velocity.unitvector().scalarmul(maxV)
         }
 
         return velocity
     }
+
+    //충돌 감지
+    isColllision(cell){
+        if(Vector2.distance(this.position, cell.position) <= this.radius + cell.radius){
+            return true
+        }
+        return false
+    }
+}
+
+//먹이
+class Food extends Cell{
+
 }
