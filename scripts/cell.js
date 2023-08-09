@@ -7,8 +7,11 @@ class Cell{
         this.position = position
         this.mass = mass
         this.radius = Math.sqrt(mass)
+        this.acceleration = new Vector2(0, 0)
 
         this.velocity = new Vector2(0, 0)
+        this.exVelocity =  new Vector2(0, 0)
+        this.acVelocity =  new Vector2(0, 0)
     }
 
     //마우스의 위치를 속도로 바꾸어주는 함수
@@ -54,6 +57,110 @@ class Cell{
             return true
         }
         return false
+    }
+}
+
+//세포 군집
+class Cluster{
+    constructor(cellarr){
+        this.cells = cellarr
+    }
+
+    //모든 세포의 위치를 새로고침
+    refreshPosition(border, dt){
+        for(var i = 0; i < this.cells.length; i++){
+            //분열시가속도관여속도 
+            this.cells[i].acVelocity = this.cells[i].acVelocity.add(this.cells[i].acceleration.scalarmul(dt))
+            if(this.cells[i].acVelocity.norm() < 1){
+                this.cells[i].acceleration = Vector2.zeroVector
+            }
+
+            this.cells[i].position = this.cells[i].position.add((this.cells[i].velocity.add(this.cells[i].exVelocity).add(this.cells[i].acVelocity)).scalarmul(dt))
+            //경계선 넘었는지 판단
+            this.cells[i].isBorder(border)
+            //세포끼리 겹치지 않도록
+            for(var j = 0; j < this.cells.length; j++){
+                if(i != j){
+                    if(Vector2.distance(this.cells[i].position, this.cells[j].position) < this.cells[i].radius + this.cells[j].radius){
+                        var mid = Vector2.add(this.cells[i].position.scalarmul(this.cells[j].radius), this.cells[j].position.scalarmul(this.cells[i].radius)).scalarmul(1/(this.cells[i].radius + this.cells[j].radius))
+                        this.cells[i].position = mid.add(Vector2.sub(mid, this.cells[i].position).unitvector().scalarmul(-this.cells[i].radius))
+                        this.cells[j].position = mid.add(Vector2.sub(mid, this.cells[j].position).unitvector().scalarmul(-this.cells[j].radius))
+                    }
+                }
+            }
+
+            //평균 위치로의 인력 작용
+            this.cells[i].exVelocity = /*this.cells[i].exVelocity.add(*/this.averagePosition().sub(this.cells[i].position).scalarmul(0.4)/*.scalarmul(dt))*/
+        }
+    }
+
+    //평균 위치 반환
+    averagePosition(){
+        var avp = new Vector2(0, 0)
+        for(var i = 0; i < this.cells.length; i++){
+            avp = avp.add(this.cells[i].position)
+        }
+        avp = avp.scalarmul(1/this.cells.length)
+        return avp
+    }
+
+    //먹이 섭취 여부 판단
+    isFoodCollision(food){
+        for(var j = 0; j < this.cells.length; j++){
+            if(this.cells[j].isColllision(food)){
+                this.cells[j].mass += food.mass
+                this.cells[j].radius = Math.sqrt(Number(this.cells[j].mass))
+                console.log(this.cells[j].mass)
+
+                return true
+            }
+        }
+        return false
+    }
+
+    //먹이주기
+    feeding(ufoods){
+        for(var i = 0; i < this.cells.length; i++){
+            if(this.cells[i].mass >= 32){
+                this.cells[i].mass -= 17 // 질량 손실: 17
+                this.cells[i].radius = Math.sqrt(this.cells[i].mass)
+
+
+                ufoods[ufoods.length] = new Food(this.cells[i].position.add(this.cells[i].velocity.unitvector().scalarmul(this.cells[i].radius + Math.sqrt(14))), 13) // 질량이 13인 먹이 생성
+                ufoods[ufoods.length - 1].velocity = this.cells[i].velocity.unitvector().scalarmul(30)
+                ufoods[ufoods.length - 1].acceleration = this.cells[i].velocity.unitvector().scalarmul(-15)
+            }
+        }
+    }
+
+    draw(drw){
+        for(var i = 0; i < this.cells.length; i++){
+            //세포 그리기
+            drw.Circle(this.cells[i].radius, this.cells[i].position)
+        }
+    }
+
+    setVelocity(){
+        for(var i = 0; i < this.cells.length; i++){
+            this.cells[i].velocity = this.cells[i].mpToVelocity(canvas, mouseX, mouseY)
+        }
+    }
+    
+    division_all(){
+        var cellslength = this.cells.length
+        for(var i = 0; i < cellslength; i++){
+            if(this.cells[i].mass >= 64){ // 64이상에서만 분열 가능
+                this.cells[i].mass /= 2 //절반으로 분할
+                this.cells[i].radius = Math.sqrt(Number(this.cells[i].mass))
+                this.cells[this.cells.length] = new Cell(this.cells[i].position.add(this.cells[i].velocity.unitvector().scalarmul(this.cells[i].radius*2)), this.cells[i].mass)
+                this.cells[this.cells.length-1].acVelocity = this.cells[i].velocity.unitvector().scalarmul(30)
+                this.cells[this.cells.length-1].acceleration = this.cells[i].velocity.unitvector().scalarmul(-15)
+            }
+        }
+    }
+
+    reunion(){
+
     }
 }
 
