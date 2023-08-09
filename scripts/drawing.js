@@ -53,6 +53,26 @@ class Drawing{
         ctx.lineTo(this.cvtct(0, this.ymin).x, this.cvtct(0, this.ymin).y)
         ctx.stroke()
     }
+    
+    drawline(ctx, v1 ,v2){
+        ctx.beginPath()
+        ctx.moveTo(this.cvtctVector2(v1).x, this.cvtctVector2(v1).y)
+        ctx.lineTo(this.cvtctVector2(v2).x, this.cvtctVector2(v2).y)
+        ctx.stroke()
+    }
+
+    border(bord){
+        var ctx = this.cvs.getContext("2d");
+
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "red";
+
+        //사각형 테두리 그리기
+        this.drawline(ctx, bord.v1, bord.v2)
+        this.drawline(ctx, bord.v2, bord.v3)
+        this.drawline(ctx, bord.v3, bord.v4)
+        this.drawline(ctx, bord.v4, bord.v1)
+    }
 
     //Vector2 위치에 원 그리기
     Circle(r, v2){

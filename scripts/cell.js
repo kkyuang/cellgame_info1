@@ -17,17 +17,35 @@ class Cell{
         var mvx = mouseX - cvs.width/2
         var mvy = -mouseY + cvs.height/2
 
+        //최고 속도 정하기
+        var maxV = 7 + (100/this.mass)
+
         //속도 비례상수 곱하기
-        var constant = 0.01
+        var constant = (maxV) / 100
         var velocity = new Vector2(mvx * constant, mvy * constant)
         
-        //최고 속도 정하기
-        var maxV = 10
         if(velocity.norm() > maxV){
             velocity = velocity.unitvector().scalarmul(maxV)
         }
 
         return velocity
+    }
+    
+    isBorder(bord){
+        //x축과 y축을 각각 고려
+        var range = bord.findXYrange()
+        if(this.position.x - this.radius < range.xmin){
+            this.position = new Vector2(range.xmin + this.radius, this.position.y)
+        }
+        if(this.position.x + this.radius > range.xmax){
+            this.position = new Vector2(range.xmax - this.radius, this.position.y)
+        }
+        if(this.position.y - this.radius< range.ymin){
+            this.position = new Vector2(this.position.x, range.ymin + this.radius)
+        }
+        if(this.position.y + this.radius > range.ymax){
+            this.position = new Vector2(this.position.x, range.ymax - this.radius)
+        }
     }
 
     //충돌 감지

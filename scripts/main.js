@@ -15,13 +15,17 @@ $(document).ready(function () {
     cell = new Cell(new Vector2(0, 0), 10)
 
     //먹이 생성
-    foodCnt = 1000
-    for(var i = 0; i < 100; i++){
+    foodCnt = 500
+    bordersize = 200
+    for(var i = 0; i < foodCnt; i++){
         //범위
-        xrange = 100
-        yrange = 100
+        xrange = bordersize
+        yrange = bordersize
         foods.push(new Food(new Vector2(Math.random()*xrange*2 - xrange, Math.random()*yrange*2 - yrange), 1))
     }
+
+    //경계 정의
+    border = new Border(new Vector2(-bordersize, bordersize), new Vector2(bordersize, bordersize), new Vector2(bordersize, -bordersize), new Vector2(-bordersize, -bordersize))
 
     //dt 정의
     dt = 0.01
@@ -33,6 +37,8 @@ $(document).ready(function () {
 
         //세포 변위 새로고침
         cell.position = cell.position.add(cell.velocity.scalarmul(dt))
+        //경계선 넘었는지 판단
+        cell.isBorder(border)
         
 
 
@@ -59,6 +65,8 @@ $(document).ready(function () {
     
         //세포 그리기
         drw.Circle(cell.radius, cell.position)
+
+        drw.border(border)
         
 
     }, (dt)*1000)
