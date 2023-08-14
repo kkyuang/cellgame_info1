@@ -21,7 +21,7 @@ class Cell{
         var velocity = new Vector2(mvx * constant, mvy * constant)
         
         //최고 속도 정하기
-        var maxV = 3
+        var maxV = 5
         if(velocity.norm() > maxV){
             velocity = velocity.unitvector().scalarmul(maxV)
         }
