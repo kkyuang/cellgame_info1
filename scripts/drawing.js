@@ -7,6 +7,7 @@ class Drawing{
         this.cvs = cvs
         this.canvasWidth = cvs.width
         this.canvasHeight = cvs.height
+        this.scr = scr
 
         //표시 좌표 최대, 최소값 관련 정보
         this.xmin = scr.xmin
@@ -52,10 +53,29 @@ class Drawing{
         ctx.lineTo(this.cvtct(0, this.ymin).x, this.cvtct(0, this.ymin).y)
         ctx.stroke()
     }
+    
+    drawline(ctx, v1 ,v2){
+        ctx.beginPath()
+        ctx.moveTo(this.cvtctVector2(v1).x, this.cvtctVector2(v1).y)
+        ctx.lineTo(this.cvtctVector2(v2).x, this.cvtctVector2(v2).y)
+        ctx.stroke()
+    }
+
+    border(bord){
+        var ctx = this.cvs.getContext("2d");
+
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "red";
+
+        //사각형 테두리 그리기
+        this.drawline(ctx, bord.v1, bord.v2)
+        this.drawline(ctx, bord.v2, bord.v3)
+        this.drawline(ctx, bord.v3, bord.v4)
+        this.drawline(ctx, bord.v4, bord.v1)
+    }
 
     //Vector2 위치에 원 그리기
     Circle(r, v2){
-
         var ctx = this.cvs.getContext("2d");
         var position = this.cvtctVector2(v2)
 
@@ -63,6 +83,10 @@ class Drawing{
         var centerY = position.y
 
         var radius = this.cvtctSize(r)
+
+        if(!this.scr.isInScr(v2, r)){
+            return
+        }
     
         //위치에 선 긋기
         ctx.beginPath();
@@ -89,6 +113,16 @@ class Screen{
 
         this.ymin = center.y - height/2
         this.ymax = center.y + height/2
+    }
+
+    //오브젝트가 화면 내부에 있는가를 탐지 
+    isInScr(v2, r){
+        if(v2.x - r < this.xmax && v2.x + r > this.xmin){
+            if(v2.y - r < this.ymax && v2.y + r > this.ymin){
+                return true
+            }
+        }
+        return false
     }
 }
 
