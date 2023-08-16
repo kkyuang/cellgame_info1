@@ -1,0 +1,36 @@
+<html>
+<head>
+    <script>
+        var a
+        let b
+        const c = 3;
+        function printing(){
+            console.log("hello world")
+
+            var name = document.getElementById("name_input").value
+            console.log(name)
+
+            document.getElementById("s").innerHTML = "you pressed btn"
+        }
+    </script>
+</head>
+<body>
+    <h4 style="color: red;">hello world</h4>
+    <button onclick="printing()">hello btn</button>
+    
+
+    <input type="text" placeholder="이름" onchange="printing()" id="name_input">
+
+
+
+
+    <br>
+    <a href="a.html">이동하자!</a>
+
+    <span id="s">not btn press yet</span>
+
+    <div style="background-color: aqua; width: 100px; height: 100px;">
+
+    </div>
+</body>
+</html>
