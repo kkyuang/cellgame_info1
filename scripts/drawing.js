@@ -75,7 +75,7 @@ class Drawing{
     }
 
     //Vector2 위치에 원 그리기
-    Circle(r, v2){
+    Circle(r, v2, text){
         var ctx = this.cvs.getContext("2d");
         var position = this.cvtctVector2(v2)
 
@@ -88,7 +88,7 @@ class Drawing{
             return
         }
     
-        //위치에 선 긋기
+        //원 그리기
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
         ctx.fillStyle = "red";
@@ -96,6 +96,14 @@ class Drawing{
         ctx.lineWidth = 1;
         ctx.strokeStyle = "black";
         ctx.stroke();
+
+        //텍스트(질량 표시용)
+        if(text != undefined){
+            ctx.fillStyle = "black";
+            ctx.textAlign = "center";
+            ctx.textBaseline= "middle"; 
+            ctx.fillText(text, centerX, centerY, radius) 
+        }
     }
     
 }

@@ -4,7 +4,7 @@
 //최저 속도
 const minVelocity = 5
 //속도 비례상수
-const VelocityC = 50
+const VelocityC = 200
 
 
 
@@ -145,7 +145,7 @@ class Cluster{
     draw(drw){
         for(var i = 0; i < this.cells.length; i++){
             //세포 그리기
-            drw.Circle(this.cells[i].radius, this.cells[i].position)
+            drw.Circle(this.cells[i].radius, this.cells[i].position, this.cells[i].mass)
         }
     }
 

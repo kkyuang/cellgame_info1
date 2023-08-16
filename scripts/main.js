@@ -24,7 +24,7 @@ $(document).ready(function () {
     canvas = $("#mainCanvas")[0]
 
     //세포 정의
-    cluster = new Cluster([new Cell(new Vector2(0, 0), 10), new Cell(new Vector2(3, 3), 15), new Cell(new Vector2(-8, 8), 64)])
+    cluster = new Cluster([new Cell(new Vector2(0, 0), 20)])
 
     //먹이 생성
     foodCnt = 500
