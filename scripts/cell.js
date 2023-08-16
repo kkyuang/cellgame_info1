@@ -1,6 +1,14 @@
 //세포 관련 클래스
 //먼저 세포 클래스와 동작 관련 부분부터 정의하자.
 
+//최저 속도
+const minVelocity = 5
+//속도 비례상수
+const VelocityC = 50
+
+
+
+
 class Cell{
     //생성부
     constructor(position, mass){
@@ -21,14 +29,13 @@ class Cell{
         var mvy = -mouseY + cvs.height/2
 
         //최고 속도 정하기
-        var maxV = 7 + (100/this.mass)
+        var maxV = minVelocity + (VelocityC/this.mass)
 
         //속도 비례상수 곱하기
         var constant = (maxV) / 100
         var velocity = new Vector2(mvx * constant, mvy * constant)
         
         //최고 속도 정하기
-        var maxV = 3
         if(velocity.norm() > maxV){
             velocity = velocity.unitvector().scalarmul(maxV)
         }
@@ -142,7 +149,8 @@ class Cluster{
         }
     }
 
-    setVelocity(){
+    //각 세포들의 속도를 설정
+    setVelocity(canvas, mouseX, mouseY){
         for(var i = 0; i < this.cells.length; i++){
             this.cells[i].velocity = this.cells[i].mpToVelocity(canvas, mouseX, mouseY)
         }
@@ -150,19 +158,39 @@ class Cluster{
     
     division_all(){
         var cellslength = this.cells.length
+        console.log("division")
         for(var i = 0; i < cellslength; i++){
             if(this.cells[i].mass >= 64){ // 64이상에서만 분열 가능
                 this.cells[i].mass /= 2 //절반으로 분할
-                this.cells[i].radius = Math.sqrt(Number(this.cells[i].mass))
-                this.cells[this.cells.length] = new Cell(this.cells[i].position.add(this.cells[i].velocity.unitvector().scalarmul(this.cells[i].radius*2)), this.cells[i].mass)
-                this.cells[this.cells.length-1].acVelocity = this.cells[i].velocity.unitvector().scalarmul(30)
-                this.cells[this.cells.length-1].acceleration = this.cells[i].velocity.unitvector().scalarmul(-15)
+                this.cells[i].radius = Math.sqrt(Number(this.cells[i].mass))// 반지름 새로고침
+
+                // 분열 방향 정하기
+                // 새로운 세포 만들고 위치를 현재 벡터에서 분열 방향으로 반지름 두 배 만큼 떨어진 곳으로 정함.
+                var direction;
+                if(!this.cells[i].velocity.isEqual(Vector2.zeroVector)){ //속도벡터가 0이 아닐 경우
+                    direction = this.cells[i].velocity
+                }
+                else{ //속도백터가 0일경우
+                    direction = new Vector2(1-2*Math.random(), 1-2*Math.random())
+                }
+                this.cells[this.cells.length] = new Cell(this.cells[i].position.add(direction.unitvector().scalarmul(this.cells[i].radius*2)), this.cells[i].mass)
+                this.cells[this.cells.length-1].acVelocity = direction.unitvector().scalarmul(30)
+                this.cells[this.cells.length-1].acceleration = direction.unitvector().scalarmul(-15)
             }
         }
     }
 
+    //모든 세포의 재결합
     reunion(){
+        var massSum = 0
+        console.log("reunion")
+        var AVP = this.averagePosition() //평균 위치
+        for(var i = 0; i < this.cells.length; i++){
+            massSum += this.cells[i].mass
+        }
 
+        //세포 배열 초기화 후 평균 위치에 모든 질량의 합으로 새로운 세포 생성
+        this.cells = [new Cell(AVP, massSum)]
     }
 }
 

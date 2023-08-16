@@ -1,6 +1,8 @@
 //애니메이션 정의
 var interval
 
+var reunionTimeout
+
 //전역변수 정의
 var cluster
 var foods = []
@@ -12,6 +14,9 @@ var canvas
 var bordersize = 200
 var xrange = bordersize
 var yrange = bordersize
+
+//상수 정의
+const reunionTime = 20*1000
 
 //메인 코드 동작부
 $(document).ready(function () {
@@ -92,11 +97,17 @@ $(document).keydown(function(e) {
     if(e.keyCode == 32){ //스페이스
         //질량이 64 이상일 때부터 분열 가능
         cluster.division_all()
+        clearTimeout(reunionTimeout)
+        reunionTimeout = setTimeout(() => {cluster.reunion()}, reunionTime)
     }
     if(e.keyCode == 87){ //W
         // 질량이 32 이상일 때부터 먹이 주기 가능
         cluster.feeding(ufoods)
     }
+    //if(e.keyCode == 82){ //R
+        // 재결합
+    //    cluster.reunion()
+    //}
 });
 
 window.onmousemove = function(e) {
