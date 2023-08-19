@@ -71,8 +71,10 @@ class Cell{
 
 //세포 군집
 class Cluster{
-    constructor(cellarr){
-        this.cells = cellarr
+    constructor(cluster){
+
+
+        this.cells = cluster.cells
     }
 
     //모든 세포의 위치를 새로고침
@@ -127,6 +129,37 @@ class Cluster{
         return false
     }
 
+    //다른 세포와의 충돌처리
+    isCellCollision(cluster){
+        for(var i = 0; i < cluster.cells.length; i++){
+            for(var j = 0; j < this.cells.length; j++){
+                //자신의 세포 j번과 상대 세포 i번이 충돌시
+                if(this.cells[j].isColllision(cluster.cells[i])){
+                    //자신 세포가 상대 세포를 잡아먹을 때 
+                    if(this.cells[j].mass > cluster.cells[i].mass * 1.2){
+                        //질량 더하기
+                        this.cells[j].mass += cluster.cells[i].mass
+                        //반지름 새로고침
+                        this.cells[j].radius = Math.sqrt(Number(this.cells[j].mass))
+                        console.log(i + " " + j)
+                        console.log(this.cells[j].mass + " col")
+    
+                        return i
+                    }
+                    else if(this.cells[j].mass * 1.2 < cluster.cells[i].mass ){ //자신 세포가 잡아먹힐 떄
+                        //자신 세포 번호의 음수 - 1
+                        return -j - 1
+                    }
+
+                    //아무 반응도 없을 때
+                    return false
+                }
+            }
+        }
+        return false
+    }
+
+
     //먹이주기
     feeding(ufoods){
         for(var i = 0; i < this.cells.length; i++){
@@ -142,10 +175,10 @@ class Cluster{
         }
     }
 
-    draw(drw){
+    draw(drw, cl_name){
         for(var i = 0; i < this.cells.length; i++){
             //세포 그리기
-            drw.Circle(this.cells[i].radius, this.cells[i].position, this.cells[i].mass)
+            drw.Circle(this.cells[i].radius, this.cells[i].position, (cl_name + '\n' + this.cells[i].mass))
         }
     }
 
@@ -154,6 +187,15 @@ class Cluster{
         for(var i = 0; i < this.cells.length; i++){
             this.cells[i].velocity = this.cells[i].mpToVelocity(canvas, mouseX, mouseY)
         }
+    }
+    
+    //모든 세포의 질량 합을 반환
+    mass_sum(){
+        var sum = 0
+        for(var i = 0; i < this.cells.length; i++){
+            sum += this.cells[i].mass
+        }
+        return sum
     }
     
     division_all(){

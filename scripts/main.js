@@ -8,7 +8,20 @@ var cluster
 var foods = []
 var ufoods = []
 var canvas
+var other_clusters = []
 
+var frameNum = 0
+
+var socket
+
+var clientID
+
+
+//조작 관련
+//마우스 방향 표시
+var mouseDirection = new Vector2(0, 0)
+var isDivide = false
+var isFeeding = false
 
 //먹이 범위
 var bordersize = 200
@@ -18,91 +31,95 @@ var yrange = bordersize
 //상수 정의
 const reunionTime = 20*1000
 
+$(function(){
+    //게임 시작 버튼을 눌렀을 때
+    $("#start-btn").click(() => {
+        console.log($("#client_ID").val() )
+        console.log("게임 시작 버튼 클릭")
+        if($("#client_ID").val() != ""){
+            clientID = $("#client_ID").val()
+            socket.emit('client_regist', clientID)
+
+            $("#ID_input_div").hide()
+        }
+        else{
+            alert("클라이언트 ID를 입력해 주세요")
+        }
+    })
+})
+
 //메인 코드 동작부
 $(document).ready(function () {
-    //캔버스 불러오기
-    canvas = $("#mainCanvas")[0]
 
-    //세포 정의
-    cluster = new Cluster([new Cell(new Vector2(0, 0), 20)])
+    socket = io();
+    socket.on('msg', function (data) {
+        console.log(data)
+    });
 
-    //먹이 생성
-    foodCnt = 500
-    for(var i = 0; i < foodCnt; i++){
-        foods.push(new Food(new Vector2(Math.random()*xrange*2 - xrange, Math.random()*yrange*2 - yrange), 1))
-    }
 
-    //경계 정의
-    border = new Border(new Vector2(-bordersize, bordersize), new Vector2(bordersize, bordersize), new Vector2(bordersize, -bordersize), new Vector2(-bordersize, -bordersize))
+    //새로운 프레임을 받았을 때
+    socket.on('new_frame', function (data) {
+        console.log(data)
 
-    //dt 정의
-    dt = 0.01
-    
-    //애니메이션(인터벌)실행
-    interval = setInterval(() => {
+        //캔버스 불러오기
+        canvas = $("#mainCanvas")[0]
+        
         //화면 사이즈 맞추기
         resizeCvs(canvas)
 
-        //세포 변위 새로고침
-        
-        cluster.refreshPosition(border, dt)
-        
-
 
         //스크린과 그림 오브젝트 정의
-        scr = new Screen(canvas, cluster.averagePosition(), 120)
+        //스크린 사이즈를 질량 범위에 따라서
+        cluster = new Cluster(data.clusters[clientID])
+        console.log(cluster)
+
+        //스크린 위치 맞추기
+        masssum = cluster.mass_sum()
+        scrsize = 15 * Math.sqrt(masssum)
+        scr = new Screen(canvas, cluster.averagePosition(), scrsize)
         drw = new Drawing(canvas, scr)
-        
+
         //기본 좌표축 그리기
         drw.coordinateDrawing()
 
         //먹이 그리기
-        for(var i  = 0; i < foods.length; i++){
-            //충돌처리
-            if(cluster.isFoodCollision(foods[i])){
-                foods[i] = new Food(new Vector2(Math.random()*xrange*2 - xrange, Math.random()*yrange*2 - yrange), 1)
-            }
-            drw.Circle(foods[i].radius, foods[i].position)
+        for(var i  = 0; i < data.foods.length; i++){
+            drw.Circle(data.foods[i].radius, data.foods[i].position)
         }
 
         //플레이어 발사 먹이 그리기
-        for(var i  = 0; i < ufoods.length; i++){
-            //충돌처리
-            if(cluster.isFoodCollision(ufoods[i])){
-                ufoods.splice(i, 1)
-            }
-            else{
-                //속도 절댓값이 1보다 작으면 가속도, 속도를 0으로
-                if(ufoods[i].velocity.norm() < 1){
-                    ufoods[i].acceleration = Vector2.zeroVector
-                    ufoods[i].velocity = Vector2.zeroVector
-                }
-                ufoods[i].velocity = ufoods[i].velocity.add(ufoods[i].acceleration.scalarmul(dt))
-                ufoods[i].position = ufoods[i].position.add(ufoods[i].velocity.scalarmul(dt))
-                drw.Circle(ufoods[i].radius, ufoods[i].position)
-            }
+        for(var i  = 0; i < data.ufoods.length; i++){
+            drw.Circle(data.ufoods[i].radius, data.ufoods[i].position)
+        }        
+
+        //클러스터 그리기
+        cluster_names = Object.keys(data.clusters)
+        for(var i = 0; i < cluster_names.length; i++){
+            cluster_i = new Cluster(data.clusters[cluster_names[i]])
+            cluster_i.draw(drw, cluster_names[i])
         }
-        
 
-        cluster.draw(drw)
+        //경계면 그리기
+        drw.border(data.border)
 
-        drw.border(border)
-        
+        //조작 데이터 전송
+        socket.emit('action_receive', {clientID: clientID, frameNum: data.frameNum, mouseDirection: mouseDirection, isDivide: isDivide, isFeeding: isFeeding})
 
-    }, (dt)*1000)
+        //키 입력 여부 초기화
+        isDivide = false
+        isFeeding = false
+    });
 });
 
 //키 입력 이벤트
 $(document).keydown(function(e) {
     if(e.keyCode == 32){ //스페이스
         //질량이 64 이상일 때부터 분열 가능
-        cluster.division_all()
-        clearTimeout(reunionTimeout)
-        reunionTimeout = setTimeout(() => {cluster.reunion()}, reunionTime)
+        isDivide = true
     }
     if(e.keyCode == 87){ //W
         // 질량이 32 이상일 때부터 먹이 주기 가능
-        cluster.feeding(ufoods)
+        isFeeding = true
     }
     //if(e.keyCode == 82){ //R
         // 재결합
@@ -114,5 +131,5 @@ window.onmousemove = function(e) {
     mouseX = e.clientX;
     mouseY = e.clientY;
 
-    cluster.setVelocity(canvas, mouseX, mouseY)
+    mouseDirection = new Vector2(2*(e.clientX - window.innerWidth/2)/window.innerWidth, -2*(e.clientY - window.innerHeight/2)/window.innerHeight)
 }
