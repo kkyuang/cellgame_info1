@@ -57,7 +57,6 @@ class Cluster{
             if(this.cells[j].isColllision(food)){
                 this.cells[j].mass += food.mass
                 this.cells[j].radius = Math.sqrt(Number(this.cells[j].mass))
-                console.log(this.cells[j].mass)
 
                 return true
             }

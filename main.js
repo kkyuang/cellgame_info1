@@ -40,7 +40,7 @@ let exTime = null;
 var actions = {}
 
 //서버 시작할 때
-server.listen(3000, function() {
+server.listen(4000, function() {
     //먹이 생성
     for(var i = 0; i < foodCnt; i++){
         foods.push(new Cell(new Vector2(Math.random()*xrange*2 - xrange, Math.random()*yrange*2 - yrange), 1))
@@ -94,19 +94,30 @@ io.on('connection', (socket) => {
           //위치 새로고침
           clusters[key_i].refreshPosition(actions[key_i].mouseDirection, border, dt)
 
+          
           //분열 동작
           if(actions[key_i].isDivide){
-
+            clusters[key_1].division_all()
           }
 
           //먹이주기 동작
           if(actions[key_i].isFeeding){
-            
+            clusters[key_i].feeding(ufoods)
           }
+
+          //먹이 섭취 동작
+          for(var i  = 0; i < foods.length; i++){
+            //충돌처리
+            if(clusters[key_i].isFoodCollision(foods[i])){
+                foods[i] = new Cell(new Vector2(Math.random()*xrange*2 - xrange, Math.random()*yrange*2 - yrange), 1)
+            }
+          }
+          console.log(dt)
         }
 
         //최종 전송
         frameNum++
+        actions = {}
         io.emit('new_frame', {clusters: clusters, foods: foods, ufoods: ufoods, border: border, frameNum: frameNum})
       }
     }
