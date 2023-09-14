@@ -30,7 +30,7 @@ const yrange = bordersize
 const reunionTime = 20*1000
 
 //먹이 개수
-var foodCnt = 500
+var foodCnt = 500;
 
 //미소 시간 변화량
 var dt = 0.01 //단위: ms
